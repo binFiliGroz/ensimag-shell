@@ -11,6 +11,10 @@
 
 #include "variante.h"
 #include "readcmd.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 #ifndef VARIANTE
 #error "Variante non défini !!"
@@ -24,6 +28,41 @@
 
 #if USE_GUILE == 1
 #include <libguile.h>
+
+pid_t launch_command (struct cmdline *l) {
+        pid_t pid;
+
+        switch(pid = fork()) {
+        case -1:
+                perror("fork:");
+                break;
+        case 0:
+        {
+		char **cmd = l->seq[0];
+		if (l->bg) {
+			fclose(stdin);
+			fclose(stdout);
+			fclose(stderr);
+		}
+                execvp(cmd[0], cmd);
+                break;
+        }
+
+        default:
+        {
+		if (!(l->bg)) {
+                	int status;
+                	waitpid(pid, &status, 0);
+		}
+		else {
+			
+		}
+                break;
+        }
+	}
+
+        return pid;
+}
 
 int question6_executer(char *line)
 {
@@ -71,7 +110,7 @@ int main() {
 	while (1) {
 		struct cmdline *l;
 		char *line=0;
-		int i, j;
+		//int i, j;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -115,11 +154,12 @@ int main() {
 			continue;
 		}
 
+		/*
 		if (l->in) printf("in: %s\n", l->in);
 		if (l->out) printf("out: %s\n", l->out);
 		if (l->bg) printf("background (&)\n");
 
-		/* Display each command of the pipe */
+		// Display each command of the pipe
 		for (i=0; l->seq[i]!=0; i++) {
 			char **cmd = l->seq[i];
 			printf("seq[%d]: ", i);
@@ -128,6 +168,10 @@ int main() {
                         }
 			printf("\n");
 		}
+
+		printf("\n");
+		*/
+		launch_command(l);
 	}
 
 }
