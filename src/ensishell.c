@@ -12,6 +12,7 @@
 #include "variante.h"
 #include "readcmd.h"
 #include "shell.h"
+#include "jobs.h"
 
 
 #ifndef VARIANTE
@@ -62,6 +63,8 @@ void terminate(char *line) {
 
 
 int main() {
+        JOB_LIST jobs=create_job_list();
+
         printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
@@ -72,7 +75,10 @@ int main() {
 
 	while (1) {
 		struct cmdline *l;
-		char *line=0;
+        pid_t pid;
+        unsigned int i;
+		
+        char *line=0;
 		//int i, j;
 		char *prompt = "ensishell>";
 
@@ -135,7 +141,16 @@ int main() {
 		printf("\n");
 		*/
 
-		launch_command(l);
+        if (!strcmp("jobs", l->seq[0][0])) {
+            print_job_list(jobs);
+        }
+        else {
+            pid = launch_command(l);
+            if (l->bg) {
+                i=add_job(&jobs, pid);
+                print_job(pid, i);
+            }
+        }
 	}
 
 }
