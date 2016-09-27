@@ -79,7 +79,6 @@ int main() {
         unsigned int i;
 		
         char *line=0;
-		//int i, j;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -122,24 +121,6 @@ int main() {
 			printf("error: %s\n", l->err);
 			continue;
 		}
-
-		/*
-		if (l->in) printf("in: %s\n", l->in);
-		if (l->out) printf("out: %s\n", l->out);
-		if (l->bg) printf("background (&)\n");
-
-		// Display each command of the pipe
-		for (i=0; l->seq[i]!=0; i++) {
-			char **cmd = l->seq[i];
-			printf("seq[%d]: ", i);
-                        for (j=0; cmd[j]!=0; j++) {
-                                printf("'%s' ", cmd[j]);
-                        }
-			printf("\n");
-		}
-
-		printf("\n");
-		*/
 
         if (!strcmp("jobs", l->seq[0][0])) {
             print_job_list(jobs);
