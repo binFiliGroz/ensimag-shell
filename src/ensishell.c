@@ -122,7 +122,7 @@ int main() {
 			continue;
 		}
 
-        if (!strcmp("jobs", l->seq[0][0])) {
+        if (l->seq[0]!=0 && !strcmp("jobs", l->seq[0][0])) {
             print_job_list(jobs);
         }
         else {

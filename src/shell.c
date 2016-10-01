@@ -4,6 +4,7 @@ pid_t launch_command (struct cmdline *l) {
      pid_t pid, res;
      int tuyau[2], status;
      char **cmd=l->seq[0];
+     int in, out;
 
      switch(pid = fork()) {
          case -1:
@@ -34,6 +35,20 @@ pid_t launch_command (struct cmdline *l) {
             // alors fermeture de l'entrée standard
             if (l->bg) {
                 fclose(stdin);
+            }
+            // si fichier en entrée
+            if (l->in) {
+                printf("input\n");
+                in=open(l->in, O_RDONLY);
+                dup2(in, 0);
+                fclose(stdin);
+            }
+            // si sortie vers fichier
+            if(l->out) {
+                printf("output\n");
+                out=open(l->out, O_WRONLY | O_CREAT);
+                dup2(out, 1);
+                fclose(stdout);
             }
             // execution de la commande
             execvp(cmd[0], cmd);
