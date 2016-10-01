@@ -38,17 +38,13 @@ pid_t launch_command (struct cmdline *l) {
             }
             // si fichier en entrée
             if (l->in) {
-                printf("input\n");
                 in=open(l->in, O_RDONLY);
                 dup2(in, 0);
-                fclose(stdin);
             }
             // si sortie vers fichier
             if(l->out) {
-                printf("output\n");
-                out=open(l->out, O_WRONLY | O_CREAT);
+		out = open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666);
                 dup2(out, 1);
-                fclose(stdout);
             }
             // execution de la commande
             execvp(cmd[0], cmd);

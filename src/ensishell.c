@@ -65,7 +65,7 @@ void terminate(char *line) {
 int main() {
         JOB_LIST jobs=create_job_list();
 
-        printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
+        //printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
         scm_init_guile();
@@ -75,10 +75,10 @@ int main() {
 
 	while (1) {
 		struct cmdline *l;
-        pid_t pid;
-        unsigned int i;
+        	pid_t pid;
+        	unsigned int i;
 		
-        char *line=0;
+        	char *line=0;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -122,16 +122,15 @@ int main() {
 			continue;
 		}
 
-        if (l->seq[0]!=0 && !strcmp("jobs", l->seq[0][0])) {
-            print_job_list(jobs);
-        }
-        else {
-            pid = launch_command(l);
-            if (l->bg) {
-                i=add_job(&jobs, pid);
-                print_job(pid, i);
-            }
-        }
+       		if (l->seq[0]!=0 && !strcmp("jobs", l->seq[0][0])) {
+            		print_job_list(jobs);
+        	}
+        	else {
+            		pid = launch_command(l);
+            		if (l->bg) {
+                		i=add_job(&jobs, pid);
+               		 	print_job(pid, i);
+            		}
+        	}
 	}
-
 }
