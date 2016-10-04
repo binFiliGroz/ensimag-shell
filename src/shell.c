@@ -1,6 +1,6 @@
 #include "shell.h"
 
-pid_t launch_command (struct cmdline *l) {
+pid_t launch_command (struct cmdline *l, struct rlimit * rl){
      pid_t pid, res;
      int tuyau[2], status;
      char **cmd=l->seq[0];
@@ -13,6 +13,9 @@ pid_t launch_command (struct cmdline *l) {
     	 // si on se trouve dans le processus fils
          case 0:
          {
+            if (rl) {
+                setrlimit(RLIMIT_CPU, rl);
+            }
             // si on utilise un pipe
             if (l->seq[1]) {
                 pipe(tuyau);

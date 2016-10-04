@@ -7,9 +7,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include "readcmd.h"
 
-pid_t launch_command (struct cmdline *l);
+pid_t launch_command (struct cmdline *l, struct rlimit * rl);
 
 #endif

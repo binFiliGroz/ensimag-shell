@@ -8,12 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include "variante.h"
 #include "readcmd.h"
 #include "shell.h"
 #include "jobs.h"
-
 
 #ifndef VARIANTE
 #error "Variante non défini !!"
@@ -64,6 +65,9 @@ void terminate(char *line) {
 
 int main() {
         JOB_LIST jobs=create_job_list();
+        struct rlimit rl;
+
+        getrlimit(RLIMIT_CPU, &rl);
 
         //printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
@@ -75,10 +79,10 @@ int main() {
 
 	while (1) {
 		struct cmdline *l;
-        	pid_t pid;
-        	unsigned int i;
+        pid_t pid;
+        unsigned int i;
 		
-        	char *line=0;
+        char *line=0;
 		char *prompt = "ensishell>";
 
 		/* Readline use some internal memory structure that
@@ -122,15 +126,27 @@ int main() {
 			continue;
 		}
 
-       		if (l->seq[0]!=0 && !strcmp("jobs", l->seq[0][0])) {
-            		print_job_list(jobs);
-        	}
-        	else {
-            		pid = launch_command(l);
-            		if (l->bg) {
-                		i=add_job(&jobs, pid);
-               		 	print_job(pid, i);
-            		}
-        	}
+        // si commande interne "jobs"
+        // alors on affiche la liste des processus en arrière-plan
+        if (l->seq[0] && !strcmp("jobs", l->seq[0][0])) {
+            print_job_list(jobs);
+        }
+        else {
+            // si commande interne "ulimit X"
+            // alors on configure l alimitation du temps de calcul
+            if (l->seq[0] && !strcmp("ulimit", l->seq[0][0])) {
+                printf("seq[0][1]=%s, atoi(seq[0][1])=%d\n", l->seq[0][1], atoi("3"));
+                rl.rlim_cur = atoi(l->seq[0][1]);
+                rl.rlim_max = rl.rlim_cur+5; 
+                printf("ulimit : rlim_cur=%d; rlim_max=%d\n", (int) rl.rlim_cur, (int) rl.rlim_max);
+            }
+            else {
+                pid = launch_command(l, &rl);
+            	if (l->bg) {
+                    i=add_job(&jobs, pid);
+               		print_job(pid, i);
+            	}
+            }
+        }
 	}
 }
