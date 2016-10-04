@@ -35,10 +35,13 @@ int question6_executer(char *line)
 	 * parsecmd, then fork+execvp, for a single command.
 	 * pipe and i/o redirection are not required.
 	 */
-	printf("Not implemented yet: can not execute %s\n", line);
+	// printf("Not implemented yet: can not execute %s\n", line);
+    struct cmdline *l;
+    l=parsecmd(&line);
+    launch_command(l);
 
 	/* Remove this line when using parsecmd as it will free it */
-	free(line);
+	//free(line);
 	
 	return 0;
 }
