@@ -1,10 +1,9 @@
 #include "shell.h"
 
-pid_t launch_command (struct cmdline *l, struct rlimit * rl){
+pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
      pid_t pid, res;
-     int tuyau[2], status;
+     int tuyau[2], status, in, out;
      char **cmd=l->seq[0];
-     int in, out;
 
      switch(pid = fork()) {
          case -1:
@@ -25,6 +24,10 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl){
                    // sur l'entrée du processus
                    dup2(tuyau[0], 0);
                    close(tuyau[1]);
+                   if (l->out) {
+                       out = open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666); 
+                       dup2(out, 1);
+                   }
                    execvp(l->seq[1][0], l->seq[1]);
                 }
                 // commande d'entrée du pipe
@@ -34,6 +37,13 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl){
                 dup2(tuyau[1], 1);
                 close(tuyau[0]);
             }
+            else {
+                // si sortie vers fichier 
+                if(l->out) {
+                    out = open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666); 
+                    dup2(out, 1); 
+                }
+            }                
             // si processus en arrière plan
             // alors fermeture de l'entrée standard
             if (l->bg) {
@@ -43,11 +53,6 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl){
             if (l->in) {
                 in=open(l->in, O_RDONLY);
                 dup2(in, 0);
-            }
-            // si sortie vers fichier
-            if(l->out) {
-		out = open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666);
-                dup2(out, 1);
             }
             // execution de la commande
             execvp(cmd[0], cmd);
@@ -59,6 +64,9 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl){
             // alors on attends la fin de l'éxecution de la commande
             if (!(l->bg)) {
                 waitpid(pid, &status, 0);
+            }
+            else {
+                add_job(pjobs, pid, l->seq[0][0]);
             }
             break;
          }

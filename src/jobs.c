@@ -11,13 +11,14 @@ bool is_empty_job_list(JOB_LIST jobs) {
         return false;
 }
 
-unsigned int add_job (JOB_LIST * pjobs, pid_t pid) {
+unsigned int add_job (JOB_LIST * pjobs, pid_t pid, char * command) {
     JOB_LIST cur=*pjobs;
     unsigned int i=2;
 
     if (is_empty_job_list(*pjobs)) {
         *pjobs=malloc(sizeof(**pjobs));
         (*pjobs)->pid=pid;
+        strcpy((*pjobs)->name, command);
         (*pjobs)->nxt=create_job_list();
         return 1;
     }
@@ -30,22 +31,17 @@ unsigned int add_job (JOB_LIST * pjobs, pid_t pid) {
     cur->nxt=malloc(sizeof(*cur));
     cur=cur->nxt;
     cur->pid=pid;
+    strcpy(cur->name, command);
     cur->nxt=create_job_list();
 
     return i;
 }
 
-void print_job (pid_t pid, unsigned int i) {
-    printf("[%d] %d\n", i, pid);
-}
-
 void print_job_list (JOB_LIST jobs) {
     JOB_LIST cur=jobs;
-    unsigned i=1;
 
     while (!is_empty_job_list(cur)) {
-        print_job(cur->pid, i);
-        ++i;
+        printf("%s\n", cur->name);
         cur=cur->nxt;
     }
 }

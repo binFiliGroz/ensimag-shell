@@ -69,7 +69,7 @@ int main() {
 
         getrlimit(RLIMIT_CPU, &rl);
 
-        //printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
+        printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
         scm_init_guile();
@@ -79,11 +79,9 @@ int main() {
 
 	while (1) {
 		struct cmdline *l;
-        pid_t pid;
-        unsigned int i;
 		
         char *line=0;
-		char *prompt = "ensishell>";
+		char *prompt = "ensishell > ";
 
 		/* Readline use some internal memory structure that
 		   can not be cleaned at the end of the program. Thus
@@ -133,19 +131,13 @@ int main() {
         }
         else {
             // si commande interne "ulimit X"
-            // alors on configure l alimitation du temps de calcul
+            // alors on configure la limitation du temps de calcul
             if (l->seq[0] && !strcmp("ulimit", l->seq[0][0])) {
-                printf("seq[0][1]=%s, atoi(seq[0][1])=%d\n", l->seq[0][1], atoi("3"));
                 rl.rlim_cur = atoi(l->seq[0][1]);
                 rl.rlim_max = rl.rlim_cur+5; 
-                printf("ulimit : rlim_cur=%d; rlim_max=%d\n", (int) rl.rlim_cur, (int) rl.rlim_max);
             }
             else {
-                pid = launch_command(l, &rl);
-            	if (l->bg) {
-                    i=add_job(&jobs, pid);
-               		print_job(pid, i);
-            	}
+                launch_command(l, &rl, &jobs);
             }
         }
 	}

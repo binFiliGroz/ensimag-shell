@@ -11,7 +11,8 @@
 #include <sys/resource.h>
 
 #include "readcmd.h"
+#include "jobs.h"
 
-pid_t launch_command (struct cmdline *l, struct rlimit * rl);
+pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs);
 
 #endif
