@@ -39,7 +39,7 @@ int question6_executer(char *line)
 	// printf("Not implemented yet: can not execute %s\n", line);
     struct cmdline *l;
     l=parsecmd(&line);
-    launch_command(l);
+    launch_command(l, NULL, NULL);
 
 	/* Remove this line when using parsecmd as it will free it */
 	//free(line);

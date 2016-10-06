@@ -66,7 +66,9 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
                 waitpid(pid, &status, 0);
             }
             else {
-                add_job(pjobs, pid, l->seq[0][0]);
+                if (pjobs) {
+                    add_job(pjobs, pid, l->seq[0][0]);
+                }
             }
             break;
          }
