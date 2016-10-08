@@ -1,6 +1,6 @@
 #include "shell.h"
 
-pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
+pid_t launch_command (struct cmdline *l){
      pid_t pid, res;
      int tuyau[2], status, in, out;
      char **cmd=l->seq[0];
@@ -12,13 +12,9 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
     	 // si on se trouve dans le processus fils
          case 0:
          {
-            if (rl) {
-                setrlimit(RLIMIT_CPU, rl);
-            }
             // si on utilise un pipe
             if (l->seq[1]) {
                 pipe(tuyau);
-
                 // commande d'entrée du pipe
                 if ((res=fork())==0) {
                   // branchement de l'entrée du pipe
@@ -32,7 +28,6 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
                   }
                   execvp(l->seq[0][0], l->seq[0]);
                 }
-
                 // commande de sortie du pipe
 
                 // branchement de la sortie du pipe
@@ -56,9 +51,8 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
             }
             // si processus en arrière plan
             // alors fermeture de l'entrée standard
-            if (l->bg) {
+            if (l->bg) 
                 fclose(stdin);
-            }
             // execution de la commande
             execvp(cmd[0], cmd);
          }
@@ -67,14 +61,8 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
          {
             // si le processus est au premier plan
             // alors on attends la fin de l'éxecution de la commande
-            if (!(l->bg)) {
+            if (!(l->bg)) 
                 waitpid(pid, &status, 0);
-            }
-            else {
-                if (pjobs) {
-                    add_job(pjobs, pid, l->seq[0][0]);
-                }
-            }
             break;
          }
      }

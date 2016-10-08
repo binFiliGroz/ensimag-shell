@@ -7,8 +7,7 @@ JOB_LIST create_job_list() {
 bool is_empty_job_list(JOB_LIST jobs) {
     if (jobs==NULL)
         return true;
-    else
-        return false;
+    return false;
 }
 
 unsigned int add_job (JOB_LIST * pjobs, pid_t pid, char * command) {

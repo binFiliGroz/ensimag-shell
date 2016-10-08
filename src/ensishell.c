@@ -31,117 +31,116 @@
 
 int question6_executer(char *line)
 {
-	/* Question 6: Insert your code to execute the command line
-	 * identically to the standard execution scheme:
-	 * parsecmd, then fork+execvp, for a single command.
-	 * pipe and i/o redirection are not required.
-	 */
-	// printf("Not implemented yet: can not execute %s\n", line);
+    /* Question 6: Insert your code to execute the command line
+    * identically to the standard execution scheme:
+    * parsecmd, then fork+execvp, for a single command.
+    * pipe and i/o redirection are not required.
+    */
     struct cmdline *l;
     l=parsecmd(&line);
-    launch_command(l, NULL, NULL);
+    launch_command(l);
 
-	/* Remove this line when using parsecmd as it will free it */
-	//free(line);
-	
-	return 0;
+    return 0;
 }
 
 SCM executer_wrapper(SCM x)
 {
-        return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
+    return scm_from_int(question6_executer(scm_to_locale_stringn(x, 0)));
 }
 #endif
 
 
 void terminate(char *line) {
 #if USE_GNU_READLINE == 1
-	/* rl_clear_history() does not exist yet in centOS 6 */
-	clear_history();
+    /* rl_clear_history() does not exist yet in centOS 6 */
+    clear_history();
 #endif
-	if (line)
-	  free(line);
-	printf("exit\n");
-	exit(0);
+    if (line)
+        free(line);
+    printf("exit\n");
+    exit(0);
 }
 
 
 int main() {
-        JOB_LIST jobs=create_job_list();
-        struct rlimit rl;
+    JOB_LIST jobs=create_job_list();
+    struct rlimit rl;
 
-        getrlimit(RLIMIT_CPU, &rl);
+    // initialisation de la structure rlimit
+    getrlimit(RLIMIT_CPU, &rl);
 
-        printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
+    printf("Variante %d: %s\n", VARIANTE, VARIANTE_STRING);
 
 #if USE_GUILE == 1
-        scm_init_guile();
-        /* register "executer" function in scheme */
-        scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
+    scm_init_guile();
+    /* register "executer" function in scheme */
+    scm_c_define_gsubr("executer", 1, 0, 0, executer_wrapper);
 #endif
 
-	while (1) {
-		struct cmdline *l;
-		
-        char *line=0;
-		char *prompt = "ensishell > ";
+    while (1) {
+	struct cmdline *l;
+	char *line=0;
+	char *prompt = "ensishell > ";
+	pid_t pid;
 
-		/* Readline use some internal memory structure that
-		   can not be cleaned at the end of the program. Thus
-		   one memory leak per command seems unavoidable yet */
-		line = readline(prompt);
-		if (line == 0 || ! strncmp(line,"exit", 4)) {
-			terminate(line);
-		}
+	/* Readline use some internal memory structure that
+	   can not be cleaned at the end of the program. Thus
+	   one memory leak per command seems unavoidable yet */
+	line = readline(prompt);
+	if (line == 0 || ! strncmp(line,"exit", 4)) {
+		terminate(line);
+	}
 
 #if USE_GNU_READLINE == 1
-		add_history(line);
+	add_history(line);
 #endif
 
 
 #if USE_GUILE == 1
-		/* The line is a scheme command */
-		if (line[0] == '(') {
-			char catchligne[strlen(line) + 256];
-			sprintf(catchligne, "(catch #t (lambda () %s) (lambda (key . parameters) (display \"mauvaise expression/bug en scheme\n\")))", line);
-			scm_eval_string(scm_from_locale_string(catchligne));
-			free(line);
-                        continue;
-                }
+	/* The line is a scheme command */
+	if (line[0] == '(') {
+	    char catchligne[strlen(line) + 256];
+	    sprintf(catchligne, "(catch #t (lambda () %s) (lambda (key . parameters) (display \"mauvaise expression/bug en scheme\n\")))", line);
+	    scm_eval_string(scm_from_locale_string(catchligne));
+	    free(line);
+	    continue;
+	}
 #endif
 
-		/* parsecmd free line and set it up to 0 */
-		l = parsecmd( & line);
+	/* parsecmd free line and set it up to 0 */
+	l = parsecmd(&line);
 
-		/* If input stream closed, normal termination */
-		if (!l) {
-		  
-			terminate(0);
-		}
-		
+	/* If input stream closed, normal termination */
+	if (!l)
+	    terminate(0);
 
-		
-		if (l->err) {
-			/* Syntax error, read another command */
-			printf("error: %s\n", l->err);
-			continue;
-		}
-
-        // si commande interne "jobs"
-        // alors on affiche la liste des processus en arrière-plan
-        if (l->seq[0] && !strcmp("jobs", l->seq[0][0])) {
-            print_job_list(jobs);
-        }
-        else {
-            // si commande interne "ulimit X"
-            // alors on configure la limitation du temps de calcul
-            if (l->seq[0] && !strcmp("ulimit", l->seq[0][0])) {
-                rl.rlim_cur = atoi(l->seq[0][1]);
-                rl.rlim_max = rl.rlim_cur+5; 
-            }
-            else {
-                launch_command(l, &rl, &jobs);
-            }
-        }
+	if (l->err) {
+	    /* Syntax error, read another command */
+	    printf("error: %s\n", l->err);
+	    continue;
 	}
+
+	// si commande interne "jobs"
+	// alors on affiche la liste des processus en arrière-plan
+	if (l->seq[0] && !strcmp("jobs", l->seq[0][0])) {
+	    print_job_list(jobs);
+	    continue;
+	}
+
+	// si commande interne "ulimit X"
+	// alors on configure la limitation du temps de calcul
+	if (l->seq[0] && !strcmp("ulimit", l->seq[0][0])) {
+	    rl.rlim_cur = atoi(l->seq[0][1]);
+	    rl.rlim_max = rl.rlim_cur+5;
+	    setrlimit(RLIMIT_CPU, &rl);
+	    continue;
+	}
+
+	pid=launch_command(l);
+
+	// si commande lancée en arrière-plan
+	// alors ajout à la liste jobs
+	if (l->bg)
+	    add_job(&jobs, pid, l->seq[0][0]);
+    }
 }
