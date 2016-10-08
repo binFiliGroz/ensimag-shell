@@ -18,41 +18,46 @@ pid_t launch_command (struct cmdline *l, struct rlimit * rl, JOB_LIST * pjobs){
             // si on utilise un pipe
             if (l->seq[1]) {
                 pipe(tuyau);
-                // commande de sortie du pipe
-                if ((res=fork())==0) {
-                   // branchement de la sortie du pipe 
-                   // sur l'entrée du processus
-                   dup2(tuyau[0], 0);
-                   close(tuyau[1]);
-                   if (l->out) {
-                       out = open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666); 
-                       dup2(out, 1);
-                   }
-                   execvp(l->seq[1][0], l->seq[1]);
-                }
-                // commande d'entrée du pipe
 
-                // branchement de l'entrée du pipe
-                // sur la sortie du processus
-                dup2(tuyau[1], 1);
-                close(tuyau[0]);
+                // commande d'entrée du pipe
+                if ((res=fork())==0) {
+                  // branchement de l'entrée du pipe
+                  // sur la sortie du processus
+                  dup2(tuyau[1], 1);
+                  close(tuyau[0]);
+                  // si fichier en entrée
+                  if (l->in) {
+                      in=open(l->in, O_RDONLY);
+                      dup2(in, 0);
+                  }
+                  execvp(l->seq[0][0], l->seq[0]);
+                }
+
+                // commande de sortie du pipe
+
+                // branchement de la sortie du pipe
+                // sur l'entrée du processus
+                dup2(tuyau[0], 0);
+                close(tuyau[1]);
+
+                cmd=l->seq[1];
             }
             else {
-                // si sortie vers fichier 
-                if(l->out) {
-                    out = open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666); 
-                    dup2(out, 1); 
-                }
-            }                
+              // si fichier en entrée
+              if (l->in) {
+                  in=open(l->in, O_RDONLY);
+                  dup2(in, 0);
+              }
+            }
+            // si sortie vers fichier
+            if (l->out) {
+                out=open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666);
+                dup2(out, 1);
+            }
             // si processus en arrière plan
             // alors fermeture de l'entrée standard
             if (l->bg) {
                 fclose(stdin);
-            }
-            // si fichier en entrée
-            if (l->in) {
-                in=open(l->in, O_RDONLY);
-                dup2(in, 0);
             }
             // execution de la commande
             execvp(cmd[0], cmd);
