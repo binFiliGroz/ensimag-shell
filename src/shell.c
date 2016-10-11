@@ -69,3 +69,16 @@ pid_t launch_command (struct cmdline *l){
 
      return pid;
 }
+
+joker_etendu(){
+
+    int i = 0;
+    glob_t globbuf;
+    globbuf.gl_offs = 0;
+    glob(l->seq[0][0], GLOB_DOOFFS, NULL , &globbuf);
+    while(l->seq[i] != NULL) {
+            i++;
+            glob(l->seq[i][j], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
+    }
+}
+
