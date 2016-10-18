@@ -123,7 +123,7 @@ int main() {
 	// si commande interne "jobs"
 	// alors on affiche la liste des processus en arrière-plan
 	if (l->seq[0] && !strcmp("jobs", l->seq[0][0])) {
-	    print_job_list(jobs);
+	    update_print_job_list(&jobs);
 	    continue;
 	}
 

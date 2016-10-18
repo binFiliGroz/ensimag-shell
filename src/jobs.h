@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 typedef struct job JOB;
 struct job 
@@ -29,6 +31,6 @@ bool is_empty_job_list(JOB_LIST jobs);
 // ajoute un "job" et renvoie le nombre de jobs dans la liste
 unsigned int add_job (JOB_LIST * jobs, pid_t pid, char * command);
 // parcours la liste et affiche les jobs
-void print_job_list (JOB_LIST jobs);
+void update_print_job_list (JOB_LIST * pjobs);
 
 #endif
