@@ -1,10 +1,38 @@
 #include "shell.h"
+void traite_commande(char ** commande, char ** commande2) {
+
+    int i = 0;
+    glob_t globbuf2;
+    globbuf2.gl_offs =0;
+    glob(commande[0], GLOB_DOOFFS, NULL , &globbuf2);
+    commande2[0]=globbuf2.gl_pathv[0];
+    while (commande[i+1] != NULL) {
+        i++;
+        glob(commande[i], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf2);
+        commande2[i]=globbuf2.gl_pathv[i];
+    }
+
+}
+
+
+void joker_etendu(struct cmdline* l){
+    char*** seq2;
+    int i=0;
+    seq2 =malloc(sizeof(seq2));
+    while(l->seq[i] != NULL) {
+        seq2[i]=malloc(sizeof(l->seq[i]));
+        traite_commande(l->seq[i], seq2[i]);
+    }
+    free(l->seq);
+    l->seq = seq2;
+
+}
 
 pid_t launch_command (struct cmdline *l){
      pid_t pid, res;
      int tuyau[2], status, in, out;
      char **cmd=l->seq[0];
-
+     joker_etendu(l);
      switch(pid = fork()) {
          case -1:
                  perror("fork:");
@@ -70,15 +98,4 @@ pid_t launch_command (struct cmdline *l){
      return pid;
 }
 
-joker_etendu(){
-
-    int i = 0;
-    glob_t globbuf;
-    globbuf.gl_offs = 0;
-    glob(l->seq[0][0], GLOB_DOOFFS, NULL , &globbuf);
-    while(l->seq[i] != NULL) {
-            i++;
-            glob(l->seq[i][j], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
-    }
-}
 
