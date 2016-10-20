@@ -136,6 +136,10 @@ int main() {
 	    continue;
 	}
 
+	// modification de la commande
+	// pour remplacer les jokers étendus
+	jokers_etendus(l);
+	// execution de la commande
 	pid=launch_command(l);
 
 	// si commande lancée en arrière-plan

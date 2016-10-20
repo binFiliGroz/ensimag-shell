@@ -24,13 +24,13 @@ struct job
  
 typedef JOB* JOB_LIST;
 
-// crée liste vide
+// cree liste vide
 JOB_LIST create_job_list();
 // teste si la liste est vide
 bool is_empty_job_list(JOB_LIST jobs);
-// ajoute un "job" et renvoie le nombre de jobs dans la liste
+// ajoute un "job"
 unsigned int add_job (JOB_LIST * jobs, pid_t pid, char * command);
-// parcours la liste et affiche les jobs
+// parcours la liste, la met a jour et affiche les jobs
 void update_print_job_list (JOB_LIST * pjobs);
 
 #endif
