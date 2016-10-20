@@ -43,7 +43,7 @@ void jokers_etendus (struct cmdline * l) {
 
     // traitement de toutes les commmandes
     for (i=0; i<nb_cmd; i++) {
-	traite_commande(l->seq[0], seq2+i);
+	traite_commande(l->seq[i], seq2+i);
     }
     // ajout de la valeur 'NULL' dans la derniere commande
     // pourt respecter la structure 'struct cmdline'
