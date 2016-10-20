@@ -1,16 +1,23 @@
 #include "shell.h"
-void traite_commande(char ** commande, char ** commande2) {
+void traite_commande(char ** commande, char *** seq2, int l) {
 
     int i = 0;
-    glob_t globbuf2;
-    globbuf2.gl_offs =0;
-    glob(commande[0], GLOB_DOOFFS, NULL , &globbuf2);
-    commande2[0]=globbuf2.gl_pathv[0];
+    size_t j;
+    glob_t globbuf;
+    globbuf.gl_offs =0;
+    glob(commande[0], GLOB_DOOFFS, NULL , &globbuf);
     while (commande[i+1] != NULL) {
         i++;
-        glob(commande[i], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf2);
-        commande2[i]=globbuf2.gl_pathv[i];
+        glob(commande[i], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
     }
+    seq2[l] = malloc(sizeof(globbuf.gl_pathv+1));
+    for (j=0; j<globbuf.gl_pathc; j++)
+    {
+        seq2[l][j] = globbuf.gl_pathv[j];
+    }
+    j++;
+    seq2[l][j] = NULL;
+
 
 }
 
@@ -18,10 +25,10 @@ void traite_commande(char ** commande, char ** commande2) {
 void joker_etendu(struct cmdline* l){
     char*** seq2;
     int i=0;
-    seq2 =malloc(sizeof(seq2));
+    seq2 =malloc(sizeof(l->seq ));
     while(l->seq[i] != NULL) {
-        seq2[i]=malloc(sizeof(l->seq[i]));
-        traite_commande(l->seq[i], seq2[i]);
+        traite_commande(l->seq[i], seq2, i);
+        i++;
     }
     free(l->seq);
     l->seq = seq2;
@@ -32,7 +39,26 @@ pid_t launch_command (struct cmdline *l){
      pid_t pid, res;
      int tuyau[2], status, in, out;
      char **cmd=l->seq[0];
+     int i,j;
+     for (i=0; l->seq[i]!=0; i++) {
+            char **cmd2 = l->seq[i];
+            printf("seq[%d]: ", i);
+            for (j=0; cmd2[j]!=0; j++) {
+                printf("'%s' ", cmd2[j]);
+            }
+            printf("\n");
+     }
+
      joker_etendu(l);
+
+     for (i=0; l->seq[i]!=0; i++) {
+            char **cmd3 = l->seq[i];
+            printf("seq[%d]: ", i);
+        for (j=0; cmd3[j]!=0; j++) {
+            printf("'%s' ", cmd3[j]);
+        }
+        printf("\n");
+     }
      switch(pid = fork()) {
          case -1:
                  perror("fork:");
