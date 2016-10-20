@@ -1,5 +1,4 @@
 #include "shell.h"
-<<<<<<< HEAD
 
 void print_cmdline (struct cmdline * l) {
     unsigned int i, j;
@@ -17,27 +16,6 @@ void print_cmdline (struct cmdline * l) {
 
 void free_seq (struct cmdline * l) {
     unsigned int i, j;
-=======
-void traite_commande(char ** commande, char *** seq2, int l) {
-
-    int i = 0;
-    size_t j;
-    glob_t globbuf;
-    globbuf.gl_offs =0;
-    glob(commande[0], GLOB_DOOFFS, NULL , &globbuf);
-    while (commande[i+1] != NULL) {
-        i++;
-        glob(commande[i], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
-    }
-    seq2[l] = malloc(sizeof(globbuf.gl_pathv+1));
-    for (j=0; j<globbuf.gl_pathc; j++)
-    {
-        seq2[l][j] = globbuf.gl_pathv[j];
-    }
-    j++;
-    seq2[l][j] = NULL;
-
->>>>>>> f430832856d1f235a4c6ab57885945952a50c075
 
     for (i=0; l->seq[i]!=0; i++) {
 	char **cmd = l->seq[i];
@@ -95,20 +73,10 @@ void traite_commande(char ** commande, char *** commande2) {
 
     nb_arg=globbuf.gl_pathc+globbuf.gl_offs;
 
-<<<<<<< HEAD
     // allocation et construction de la nouvelle commande
     *commande2=malloc((nb_arg+1)*sizeof(void *));
     for(i=0; i<nb_arg; i++) {
 	(*commande2)[i]=strdup(globbuf.gl_pathv[i]);
-=======
-void joker_etendu(struct cmdline* l){
-    char*** seq2;
-    int i=0;
-    seq2 =malloc(sizeof(l->seq ));
-    while(l->seq[i] != NULL) {
-        traite_commande(l->seq[i], seq2, i);
-        i++;
->>>>>>> f430832856d1f235a4c6ab57885945952a50c075
     }
     (*commande2)[i]=NULL;
 
@@ -118,29 +86,6 @@ pid_t launch_command (struct cmdline *l){
      pid_t pid, res;
      int tuyau[2], status, in, out;
      char **cmd=l->seq[0];
-<<<<<<< HEAD
-=======
-     int i,j;
-     for (i=0; l->seq[i]!=0; i++) {
-            char **cmd2 = l->seq[i];
-            printf("seq[%d]: ", i);
-            for (j=0; cmd2[j]!=0; j++) {
-                printf("'%s' ", cmd2[j]);
-            }
-            printf("\n");
-     }
-
-     joker_etendu(l);
-
-     for (i=0; l->seq[i]!=0; i++) {
-            char **cmd3 = l->seq[i];
-            printf("seq[%d]: ", i);
-        for (j=0; cmd3[j]!=0; j++) {
-            printf("'%s' ", cmd3[j]);
-        }
-        printf("\n");
-     }
->>>>>>> f430832856d1f235a4c6ab57885945952a50c075
      switch(pid = fork()) {
          case -1:
                  perror("fork:");
