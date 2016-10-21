@@ -105,9 +105,13 @@ pid_t launch_command (struct cmdline *l){
                   // si fichier en entrée
                   if (l->in) {
                       in=open(l->in, O_RDONLY);
+		      if (in==-1) {
+			  perror("erreur d'ouverture de fichier");
+		      }
                       dup2(in, 0);
                   }
-                  execvp(l->seq[0][0], l->seq[0]);
+                  if (execvp(l->seq[0][0], l->seq[0])==-1)
+		      perror("erreur d'exécution");
                 }
                 // commande de sortie du pipe
 
@@ -122,12 +126,16 @@ pid_t launch_command (struct cmdline *l){
               // si fichier en entrée
               if (l->in) {
                   in=open(l->in, O_RDONLY);
+		  if (in==-1)
+		      perror("erreur d'ouverture de fichier");
                   dup2(in, 0);
               }
             }
             // si sortie vers fichier
             if (l->out) {
                 out=open(l->out, O_WRONLY|O_TRUNC|O_CREAT, 0666);
+		if (out==-1)
+		    perror("erreur d'ouverture de fichier");
                 dup2(out, 1);
             }
             // si processus en arrière plan
@@ -135,7 +143,8 @@ pid_t launch_command (struct cmdline *l){
             if (l->bg) 
                 fclose(stdin);
             // execution de la commande
-            execvp(cmd[0], cmd);
+            if (execvp(cmd[0], cmd)==-1)
+		perror("erreur d'exécution");
          }
      	 //si on se trouve dans le processus père
          default:
